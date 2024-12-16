@@ -11,27 +11,12 @@ import { FooterSection } from "../sections/Footer";
 
 export default function Home() {
   useEffect(() => {
-    // Memuat script reCAPTCHA saat komponen di-mount
+    // Memuat script reCAPTCHA v2 saat komponen di-mount
     const script = document.createElement("script");
-    script.src =
-      "https://www.google.com/recaptcha/enterprise.js?render=6Lc2Yp0qAAAAAItRLy9f9zRFsv9WnhRvpGp3KFfB";
+    script.src = "https://www.google.com/recaptcha/api.js";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
-
-    // Fungsi untuk menjalankan reCAPTCHA
-    script.onload = () => {
-      grecaptcha.enterprise.ready(() => {
-        grecaptcha.enterprise
-          .execute("6Lc2Yp0qAAAAAItRLy9f9zRFsv9WnhRvpGp3KFfB", {
-            action: "homepage",
-          })
-          .then((token) => {
-            console.log("reCAPTCHA token:", token);
-            // Kirim token ke backend di sini
-          });
-      });
-    };
   }, []);
 
   return (
@@ -41,6 +26,11 @@ export default function Home() {
       <AboutSection />
       <SkillsetsSection />
       <ProjectsSection />
+      <div
+        className="g-recaptcha"
+        data-sitekey="6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk
+"
+      ></div>
       <ContactSection />
       <FooterSection />
     </div>

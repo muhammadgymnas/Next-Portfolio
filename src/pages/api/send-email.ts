@@ -9,56 +9,67 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
-    const { name, email, message, recaptchaToken } = req.body;
+  if (req.method !== "POST") {
+    res.setHeader("Allow", ["POST"]);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 
-    // Pastikan environment variables tersedia
-    if (
-      !process.env.RECAPTCHA_SECRET_KEY ||
-      !process.env.EMAIL_USER ||
-      !process.env.EMAIL_PASS
-    ) {
-      return res.status(500).json({ error: "Server configuration error." });
-    }
+  const { name, email, message, recaptchaToken } = req.body;
 
-    // Validasi input
-    if (!name || !email || !message || !recaptchaToken) {
-      return res
-        .status(400)
-        .json({ error: "Please fill all fields and complete reCAPTCHA." });
-    }
+  // Pastikan environment variables tersedia
+  if (
+    !process.env.RECAPTCHA_SECRET_KEY ||
+    !process.env.EMAIL_USER ||
+    !process.env.EMAIL_PASS
+  ) {
+    return res.status(500).json({ error: "Server configuration error." });
+  }
 
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ error: "Invalid email format." });
-    }
+  // Validasi input
+  if (!name || !email || !message || !recaptchaToken) {
+    return res
+      .status(400)
+      .json({ error: "Please fill all fields and complete reCAPTCHA." });
+  }
 
-    const sanitizedMessage = DOMPurify.sanitize(message);
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ error: "Invalid email format." });
+  }
 
-    try {
-      // Verifikasi reCAPTCHA
-      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-      const recaptchaResponse = await axios.post(
-        "https://www.google.com/recaptcha/api/siteverify",
-        null,
-        {
-          params: {
-            secret: secretKey,
-            response: recaptchaToken,
-          },
-        }
-      );
+  // Tambahkan validasi panjang pesan
+  if (message.length < 10 || message.length > 1000) {
+    return res.status(400).json({
+      error: "Message must be between 10 and 1000 characters.",
+    });
+  }
 
-      const { success, score, action } = recaptchaResponse.data;
+  const sanitizedMessage = DOMPurify.sanitize(message);
 
-      console.log("reCAPTCHA Score:", score, "Action:", action);
-
-      if (!success || action !== "submit" || score < 0.5) {
-        return res.status(400).json({
-          error: "reCAPTCHA verification failed. Possible bot activity.",
-        });
+  try {
+    // Verifikasi reCAPTCHA
+    const recaptchaResponse = await axios.post(
+      "https://www.google.com/recaptcha/api/siteverify",
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: recaptchaToken,
+        },
       }
+    );
 
-      // Konfigurasi Nodemailer
+    const { success, score, action } = recaptchaResponse.data;
+
+    console.log("reCAPTCHA Score:", score, "Action:", action);
+
+    if (!success || score < 0.5) {
+      return res.status(400).json({
+        error: "reCAPTCHA verification failed. Possible bot activity.",
+      });
+    }
+
+    // Konfigurasi Nodemailer
+    try {
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -79,23 +90,18 @@ export default async function handler(
         `,
       };
 
-      // Kirim email
       await transporter.sendMail(mailOptions);
-
-      res.status(200).json({ message: "Email sent successfully!" });
-    } catch (error: any) {
-      console.error("Error occurred:", error);
-
-      if (error.response) {
-        console.error("Error response from reCAPTCHA:", error.response.data);
-      }
-
-      res.status(500).json({
-        error: "Failed to send email. Please try again later.",
-      });
+      return res.status(200).json({ message: "Email sent successfully!" });
+    } catch (emailError) {
+      console.error("Email send failed:", emailError);
+      return res
+        .status(500)
+        .json({ error: "Failed to send email. Please try again later." });
     }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  } catch (recaptchaError) {
+    console.error("reCAPTCHA verification failed:", recaptchaError);
+    return res.status(500).json({
+      error: "reCAPTCHA verification failed. Please try again.",
+    });
   }
 }
