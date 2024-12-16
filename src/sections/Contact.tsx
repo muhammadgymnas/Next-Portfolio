@@ -11,12 +11,20 @@ export const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Muat script reCAPTCHA v2
+    // Muat script reCAPTCHA
     const script = document.createElement("script");
     script.src = "https://www.google.com/recaptcha/api.js";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
+
+    script.onload = () => {
+      console.log("reCAPTCHA script loaded successfully.");
+    };
+
+    script.onerror = () => {
+      console.error("Failed to load reCAPTCHA script.");
+    };
   }, []);
 
   const handleInputChange = (
@@ -34,14 +42,15 @@ export const ContactSection = () => {
       return;
     }
 
+    console.log("Running reCAPTCHA...");
     // Jalankan reCAPTCHA
     window.grecaptcha.ready(() => {
-      (
-        window.grecaptcha.execute("6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk", {
+      window.grecaptcha
+        .execute("6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk", {
           action: "submit",
-        }) as Promise<string>
-      )
+        })
         .then(async (recaptchaToken) => {
+          console.log("reCAPTCHA token received:", recaptchaToken);
           await sendEmail(recaptchaToken);
         })
         .catch((err) => {
@@ -71,6 +80,7 @@ export const ContactSection = () => {
         setFormData({ name: "", email: "", message: "" });
         setIsModalOpen(false);
       } else {
+        console.error("Failed response from server:", response);
         alert("Failed to send message. Please try again.");
       }
     } catch (error) {
