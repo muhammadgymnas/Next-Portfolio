@@ -9,6 +9,7 @@ export const ContactSection = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -17,18 +18,55 @@ export const ContactSection = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // Dapatkan token reCAPTCHA
+    try {
+      const token = await grecaptcha.enterprise.execute(
+        "6Lc2Yp0qAAAAAItRLy9f9zRFsv9WnhRvpGp3KFfB",
+        { action: "submit" }
+      );
+      setRecaptchaToken(token);
+
+      if (!token) {
+        alert("Failed to verify reCAPTCHA.");
+        return;
+      }
+    } catch (error) {
+      console.error("Error with reCAPTCHA:", error);
+      alert("An error occurred while verifying reCAPTCHA.");
+      return;
+    }
 
     setIsSubmitting(true);
 
-    // Simulate email sending without API
-    setTimeout(() => {
-      alert("Message sent successfully!");
-      setFormData({ name: "", email: "", message: "" });
-      setIsModalOpen(false);
+    // Kirim formulir dan token reCAPTCHA ke backend
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          recaptchaToken,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Message sent successfully!");
+        setFormData({ name: "", email: "", message: "" });
+        setIsModalOpen(false);
+      } else {
+        alert("Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred. Please try again.");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -99,7 +137,6 @@ export const ContactSection = () => {
                   required
                 ></textarea>
               </div>
-
               <div className="flex justify-end gap-4">
                 <button
                   type="button"

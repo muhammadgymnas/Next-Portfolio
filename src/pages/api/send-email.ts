@@ -18,7 +18,7 @@ export default async function handler(
     }
 
     try {
-      // Verifikasi reCAPTCHA
+      // Verifikasi reCAPTCHA v3
       const secretKey = process.env.RECAPTCHA_SECRET_KEY;
       const recaptchaResponse = await axios.post(
         `https://www.google.com/recaptcha/api/siteverify`,
@@ -31,10 +31,18 @@ export default async function handler(
         }
       );
 
-      if (!recaptchaResponse.data.success) {
+      const { success, score, action } = recaptchaResponse.data;
+
+      // Debugging log (hapus di produksi)
+      console.log("reCAPTCHA Response:", recaptchaResponse.data);
+
+      // Validasi hasil reCAPTCHA
+      if (!success || action !== "submit" || score < 0.5) {
         return res
           .status(400)
-          .json({ error: "reCAPTCHA verification failed." });
+          .json({
+            error: "reCAPTCHA verification failed. Possible bot activity.",
+          });
       }
 
       // Konfigurasi Nodemailer
@@ -62,9 +70,17 @@ export default async function handler(
       await transporter.sendMail(mailOptions);
 
       res.status(200).json({ message: "Email sent successfully!" });
-    } catch (error) {
-      console.error("Failed to send email:", error);
-      res.status(500).json({ error: "Failed to send email" });
+    } catch (error: any) {
+      console.error("Error occurred:", error);
+
+      // Tangkap error detail untuk debugging
+      if (error.response) {
+        console.error("Error response from reCAPTCHA:", error.response.data);
+      }
+
+      res.status(500).json({
+        error: "Failed to send email. Please try again later.",
+      });
     }
   } else {
     res.setHeader("Allow", ["POST"]);
