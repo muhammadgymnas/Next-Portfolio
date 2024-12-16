@@ -26,11 +26,6 @@ export default function Home() {
       <AboutSection />
       <SkillsetsSection />
       <ProjectsSection />
-      <div
-        className="g-recaptcha"
-        data-sitekey="6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk
-"
-      ></div>
       <ContactSection />
       <FooterSection />
     </div>

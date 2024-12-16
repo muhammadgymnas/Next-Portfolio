@@ -20,15 +20,23 @@ export const ContactSection = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const recaptchaResponse = (
-      document.getElementById("g-recaptcha-response") as HTMLInputElement
-    )?.value;
+    // Jalankan reCAPTCHA saat tombol "Send" ditekan
+    window.grecaptcha.ready(() => {
+      (
+        window.grecaptcha.execute("6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk", {
+          action: "submit",
+        }) as unknown as Promise<string>
+      )
+        .then(async (recaptchaToken) => {
+          await sendEmail(recaptchaToken);
+        })
+        .catch(() => {
+          alert("Failed to verify reCAPTCHA. Please try again.");
+        });
+    });
+  };
 
-    if (!recaptchaResponse) {
-      alert("Please complete the reCAPTCHA verification.");
-      return;
-    }
-
+  const sendEmail = async (recaptchaToken: string) => {
     setIsSubmitting(true);
 
     try {
@@ -39,7 +47,7 @@ export const ContactSection = () => {
         },
         body: JSON.stringify({
           ...formData,
-          recaptchaToken: recaptchaResponse,
+          recaptchaToken, // Kirim token reCAPTCHA
         }),
       });
 
@@ -86,7 +94,7 @@ export const ContactSection = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter your name.."
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-cyan-500"
+                  className="w-full border border-gray-300 rounded px-3 py-2 md:px-4 md:py-3 md:text-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
@@ -104,7 +112,7 @@ export const ContactSection = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email address.."
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-cyan-500"
+                  className="w-full border border-gray-300 rounded px-3 py-2 md:px-4 md:py-3 md:text-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
@@ -121,16 +129,11 @@ export const ContactSection = () => {
                   value={formData.message}
                   onChange={handleInputChange}
                   placeholder="Write your message here.."
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-cyan-500"
+                  className="w-full border border-gray-300 rounded px-3 py-2 md:px-4 md:py-3 md:text-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={4}
                   required
                 ></textarea>
               </div>
-              {/* reCAPTCHA v2 element */}
-              <div
-                className="g-recaptcha mb-4"
-                data-sitekey="6Lc2Yp0qAAAAAItRLy9f9zRFsv9WnhRvpGp3KFfB"
-              ></div>
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
