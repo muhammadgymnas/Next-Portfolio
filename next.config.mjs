@@ -5,8 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true, // Disable default image optimization
   },
-  assetPrefix: isProd ? "/Jimnas-Next-Portfolio" : "",
-  basePath: isProd ? "/Jimnas-Next-Portfolio" : "",
+  assetPrefix: isProd ? "/Next-Portfolio" : "",
+  basePath: isProd ? "/Next-Portfolio" : "",
   output: "export",
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
