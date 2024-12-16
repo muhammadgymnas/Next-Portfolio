@@ -1,5 +1,5 @@
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 
 export const ContactSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -9,6 +9,15 @@ export const ContactSection = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Muat script reCAPTCHA v2
+    const script = document.createElement("script");
+    script.src = "https://www.google.com/recaptcha/api.js";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  }, []);
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -20,17 +29,23 @@ export const ContactSection = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Jalankan reCAPTCHA saat tombol "Send" ditekan
+    if (!window.grecaptcha) {
+      alert("reCAPTCHA is not loaded. Please reload the page.");
+      return;
+    }
+
+    // Jalankan reCAPTCHA
     window.grecaptcha.ready(() => {
       (
         window.grecaptcha.execute("6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk", {
           action: "submit",
-        }) as unknown as Promise<string>
+        }) as Promise<string>
       )
         .then(async (recaptchaToken) => {
           await sendEmail(recaptchaToken);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("reCAPTCHA execution failed:", err);
           alert("Failed to verify reCAPTCHA. Please try again.");
         });
     });
@@ -59,7 +74,7 @@ export const ContactSection = () => {
         alert("Failed to send message. Please try again.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Email sending failed:", error);
       alert("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -81,55 +96,34 @@ export const ContactSection = () => {
             <h2 className="text-lg font-bold mb-4 text-cyan-500">Contact Me</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-semibold mb-1"
-                >
-                  Name
-                </label>
+                <label htmlFor="name">Name</label>
                 <input
                   type="text"
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Enter your name.."
-                  className="w-full border border-gray-300 rounded px-3 py-2 md:px-4 md:py-3 md:text-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-semibold mb-1"
-                >
-                  Email
-                </label>
+                <label htmlFor="email">Email</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter your email address.."
-                  className="w-full border border-gray-300 rounded px-3 py-2 md:px-4 md:py-3 md:text-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-semibold mb-1"
-                >
-                  Message
-                </label>
+                <label htmlFor="message">Message</label>
                 <textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
-                  placeholder="Write your message here.."
-                  className="w-full border border-gray-300 rounded px-3 py-2 md:px-4 md:py-3 md:text-lg placeholder-gray-400 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={4}
                   required
                 ></textarea>
