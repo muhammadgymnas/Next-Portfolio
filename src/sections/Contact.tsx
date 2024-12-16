@@ -11,7 +11,6 @@ export const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Muat script reCAPTCHA
     const script = document.createElement("script");
     script.src = "https://www.google.com/recaptcha/api.js";
     script.async = true;
@@ -43,10 +42,9 @@ export const ContactSection = () => {
     }
 
     console.log("Running reCAPTCHA...");
-    // Jalankan reCAPTCHA
     window.grecaptcha.ready(() => {
       window.grecaptcha
-        .execute("6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk", {
+        .execute("6LdskJ0qAAAAALU-QujF6LVCDcXXMBtmkCCkNTpA", {
           action: "submit",
         })
         .then(async (recaptchaToken) => {
@@ -71,7 +69,7 @@ export const ContactSection = () => {
         },
         body: JSON.stringify({
           ...formData,
-          recaptchaToken, // Kirim token reCAPTCHA
+          recaptchaToken,
         }),
       });
 
@@ -80,7 +78,6 @@ export const ContactSection = () => {
         setFormData({ name: "", email: "", message: "" });
         setIsModalOpen(false);
       } else {
-        console.error("Failed response from server:", response);
         alert("Failed to send message. Please try again.");
       }
     } catch (error) {
@@ -106,34 +103,55 @@ export const ContactSection = () => {
             <h2 className="text-lg font-bold mb-4 text-cyan-500">Contact Me</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label htmlFor="name">Name</label>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-semibold mb-1"
+                >
+                  Name
+                </label>
                 <input
                   type="text"
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
+                  placeholder="Enter your name.."
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="email">Email</label>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold mb-1"
+                >
+                  Email
+                </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  placeholder="Enter your email address.."
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="message">Message</label>
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-semibold mb-1"
+                >
+                  Message
+                </label>
                 <textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
+                  placeholder="Write your message here.."
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={4}
                   required
                 ></textarea>
