@@ -1,5 +1,5 @@
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 
 export const ContactSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,30 +18,35 @@ export const ContactSection = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    // Inisialisasi reCAPTCHA setelah modal terbuka
+    if (isModalOpen) {
+      grecaptcha.enterprise.ready(() => {
+        grecaptcha.enterprise.render("recaptcha-container", {
+          sitekey: "6Lc2Yp0qAAAAAItRLy9f9zRFsv9WnhRvpGp3KFfB",
+          size: "invisible",
+          badge: "inline",
+          callback: (token: string) => {
+            setRecaptchaToken(token);
+          },
+          "error-callback": () => {
+            alert("reCAPTCHA verification failed. Please try again.");
+          },
+        });
+      });
+    }
+  }, [isModalOpen]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Dapatkan token reCAPTCHA
-    try {
-      const token = await grecaptcha.enterprise.execute(
-        "6Lc2Yp0qAAAAAItRLy9f9zRFsv9WnhRvpGp3KFfB",
-        { action: "submit" }
-      );
-      setRecaptchaToken(token);
-
-      if (!token) {
-        alert("Failed to verify reCAPTCHA.");
-        return;
-      }
-    } catch (error) {
-      console.error("Error with reCAPTCHA:", error);
-      alert("An error occurred while verifying reCAPTCHA.");
+    if (!recaptchaToken) {
+      alert("Please complete the reCAPTCHA.");
       return;
     }
 
     setIsSubmitting(true);
 
-    // Kirim formulir dan token reCAPTCHA ke backend
     try {
       const response = await fetch("/api/send-email", {
         method: "POST",
@@ -137,6 +142,7 @@ export const ContactSection = () => {
                   required
                 ></textarea>
               </div>
+              <div id="recaptcha-container" className="mb-4"></div>
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
