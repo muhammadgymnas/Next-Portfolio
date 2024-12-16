@@ -54,7 +54,7 @@ export const HeroSection = () => {
         <div className="relative w-[250px] h-[350px] md:w-[300px] md:h-[420px] lg:w-[350px] lg:h-[490px] bg-cyan-400 rounded-lg">
           <Image
             src={Jimnas}
-            alt="Ghiblify Jimnas"
+            alt="Jimnas Animation"
             layout="fill"
             objectFit="cover"
             className="rounded-lg"
