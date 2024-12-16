@@ -1,6 +1,5 @@
 "use client";
 import { useState, ChangeEvent, FormEvent } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
 
 export const ContactSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,7 +9,6 @@ export const ContactSection = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -19,45 +17,18 @@ export const ContactSection = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleRecaptchaChange = (value: string | null) => {
-    setRecaptchaToken(value);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // Cek apakah reCAPTCHA sudah diverifikasi
-    if (!recaptchaToken) {
-      alert("Please complete the reCAPTCHA verification.");
-      return;
-    }
-
     setIsSubmitting(true);
-    try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          recaptchaToken,
-        }),
-      });
 
-      if (response.ok) {
-        alert("Message sent successfully!");
-        setFormData({ name: "", email: "", message: "" });
-        setIsModalOpen(false);
-      } else {
-        alert("Failed to send message. Please try again.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("An error occurred. Please try again.");
-    } finally {
+    // Simulate email sending without API
+    setTimeout(() => {
+      alert("Message sent successfully!");
+      setFormData({ name: "", email: "", message: "" });
+      setIsModalOpen(false);
       setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -127,14 +98,6 @@ export const ContactSection = () => {
                   rows={4}
                   required
                 ></textarea>
-              </div>
-
-              {/* ReCAPTCHA */}
-              <div className="mb-4">
-                <ReCAPTCHA
-                  sitekey="YOUR_RECAPTCHA_SITE_KEY" // Ganti dengan Site Key Anda
-                  onChange={handleRecaptchaChange}
-                />
               </div>
 
               <div className="flex justify-end gap-4">

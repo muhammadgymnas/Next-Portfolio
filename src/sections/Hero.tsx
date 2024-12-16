@@ -10,7 +10,7 @@ export const HeroSection = () => {
       {/* Bagian Teks */}
       <div className="text-left md:text-left mt-10 md:ml-12">
         <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-gray-900 leading-tight">
-          Hello, <br className="md:block" /> I'm{" "}
+          Hello, <br className="md:block" /> I&apos;m{" "}
           <span className="md:hidden">Jimi</span>
           <span className="hidden md:inline">Jimi</span>
         </h1>

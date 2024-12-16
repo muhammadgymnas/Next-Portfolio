@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import CppIcon from "../assets/icons/cpp.svg";
 import GolangIcon from "../assets/icons/golang.svg";
 import CsharpIcon from "../assets/icons/csharp.svg";
@@ -71,20 +72,24 @@ const skills = [
       {
         name: "Bash",
         icon: (
-          <img
-            src={BashIcon.src}
+          <Image
+            src={BashIcon}
             alt="Bash"
-            className="w-16 h-16 object-contain grayscale group-hover:grayscale-0 transition duration-300"
+            width={64}
+            height={64}
+            className="grayscale group-hover:grayscale-0 transition duration-300"
           />
         ),
       },
       {
         name: "Wireshark",
         icon: (
-          <img
-            src={WiresharkIcon.src}
+          <Image
+            src={WiresharkIcon}
             alt="Wireshark"
-            className="w-16 h-16 object-contain grayscale group-hover:grayscale-0 transition duration-300"
+            width={64}
+            height={64}
+            className="grayscale group-hover:grayscale-0 transition duration-300"
           />
         ),
       },
@@ -98,31 +103,21 @@ const skills = [
 export const SkillsetsSection = () => {
   return (
     <section id="skillsets" className="relative py-12 overflow-hidden">
-      {/* Gradient Background for Skillsets */}
-      <div className="absolute inset-0 w-[96%] max-w-7xl min-h-3 mx-auto  bg-blue-900 top-20 rounded-lg shadow-xl -z-10"></div>
-
-      {/* Content */}
+      <div className="absolute inset-0 w-[96%] max-w-7xl min-h-3 mx-auto bg-blue-900 top-20 rounded-lg shadow-xl -z-10"></div>
       <div className="container mx-auto px-6 relative z-10">
-        {/* Section Title */}
         <h2 className="text-3xl font-bold text-white mb-8 -mt-4 text-center animate-fade-in-up">
           My Skillsets
         </h2>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {skills.map((skillCategory, index) => (
             <div key={skillCategory.category}>
-              {/* Skill Category Title */}
               <h3
-                className={`text-xl font-semibold mb-4 text-gray-100 animate-fade-in-up`}
+                className="text-xl font-semibold mb-4 text-gray-100 animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
                 {skillCategory.category}
               </h3>
-
-              {/* Horizontal Decorative Line */}
               <div className="h-1 bg-gradient-to-r from-fuchsia-300 to-blue-400 mb-6 rounded"></div>
-
-              {/* Skill Items */}
               <div className="flex flex-wrap gap-4">
                 {skillCategory.items.map((skill, idx) => (
                   <div

@@ -50,7 +50,7 @@ export const AboutSection = () => {
               AI & Data Scientist <br /> Cybersecurity Specialist
             </h3>
             <p className="mt-4 leading-relaxed text-white">
-              Hi! I'm Mathematics Undergraduate Student at Padjadjaran
+              Hi! I&apos;m Mathematics Undergraduate Student at Padjadjaran
               University, currently specializing in AI, data science, and
               cybersecurity. I help build intelligent solutions and ensure
               robust digital security to tackle modern challenges.
