@@ -10,15 +10,6 @@ import { ContactSection } from "../sections/Contact";
 import { FooterSection } from "../sections/Footer";
 
 export default function Home() {
-  useEffect(() => {
-    // Memuat script reCAPTCHA v2 saat komponen di-mount
-    const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-  }, []);
-
   return (
     <div>
       <Header />

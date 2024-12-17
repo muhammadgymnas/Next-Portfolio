@@ -17,7 +17,6 @@ export const ContactSection = () => {
     script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
     script.async = true;
     script.defer = true;
-    document.body.appendChild(script);
 
     script.onload = () => {
       console.log("reCAPTCHA script loaded.");
@@ -26,7 +25,14 @@ export const ContactSection = () => {
 
     script.onerror = () => {
       console.error("Failed to load reCAPTCHA script.");
+      alert("Failed to load Google reCAPTCHA.");
     };
+    const existingScript = document.querySelector(
+      'script[src="https://www.google.com/recaptcha/api.js?render=explicit"]'
+    );
+    if (!existingScript) {
+      document.body.appendChild(script);
+    }
   }, []);
 
   const handleInputChange = (
