@@ -16,14 +16,10 @@ export default async function handler(
 
   const { name, email, message, recaptchaToken } = req.body;
 
-  // Pastikan environment variables tersedia
-  if (
-    !process.env.RECAPTCHA_SECRET_KEY ||
-    !process.env.EMAIL_USER ||
-    !process.env.EMAIL_PASS
-  ) {
-    return res.status(500).json({ error: "Server configuration error." });
-  }
+  // Menggunakan test secret key untuk reCAPTCHA
+  const RECAPTCHA_SECRET_KEY =
+    process.env.RECAPTCHA_SECRET_KEY ||
+    "6Lefhp0qAAAAAKWwv7NG_t0SmvsAQt3pDfVf7rEP";
 
   // Validasi input
   if (!name || !email || !message || !recaptchaToken) {
@@ -36,7 +32,6 @@ export default async function handler(
     return res.status(400).json({ error: "Invalid email format." });
   }
 
-  // Tambahkan validasi panjang pesan
   if (message.length < 10 || message.length > 1000) {
     return res.status(400).json({
       error: "Message must be between 10 and 1000 characters.",
@@ -52,7 +47,7 @@ export default async function handler(
       null,
       {
         params: {
-          secret: process.env.RECAPTCHA_SECRET_KEY,
+          secret: RECAPTCHA_SECRET_KEY,
           response: recaptchaToken,
         },
       }
@@ -62,9 +57,9 @@ export default async function handler(
 
     console.log("reCAPTCHA Score:", score, "Action:", action);
 
-    if (!success || score < 0.5) {
+    if (!success) {
       return res.status(400).json({
-        error: "reCAPTCHA verification failed. Possible bot activity.",
+        error: "reCAPTCHA verification failed. Please try again.",
       });
     }
 

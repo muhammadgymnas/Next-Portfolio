@@ -183,6 +183,10 @@ export const ContactSection = () => {
                 >
                   Close
                 </button>
+                <div
+                  className="g-recaptcha"
+                  data-sitekey="6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk"
+                ></div>
                 <button
                   type="submit"
                   className={`flex items-center gap-2 bg-cyan-500 text-white py-2 px-4 rounded ${
