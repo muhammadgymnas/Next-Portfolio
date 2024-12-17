@@ -55,6 +55,12 @@ export default async function handler(
 
     const { success, score, action } = recaptchaResponse.data;
 
+    if (!success || score < 0.5 || action !== "submit") {
+      return res.status(400).json({
+        error: "reCAPTCHA verification failed. Please try again.",
+      });
+    }
+
     console.log("reCAPTCHA Score:", score, "Action:", action);
 
     if (!success) {
@@ -95,7 +101,7 @@ export default async function handler(
     }
   } catch (recaptchaError) {
     console.error("reCAPTCHA verification failed:", recaptchaError);
-    return res.status(500).json({
+    return res.status(400).json({
       error: "reCAPTCHA verification failed. Please try again.",
     });
   }

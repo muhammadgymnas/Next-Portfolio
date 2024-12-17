@@ -9,17 +9,19 @@ export const ContactSection = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false); // Untuk animasi transisi
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
 
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js";
+    script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
 
     script.onload = () => {
-      console.log("reCAPTCHA script loaded successfully.");
+      console.log("reCAPTCHA script loaded.");
+      setIsRecaptchaReady(true);
     };
 
     script.onerror = () => {
@@ -34,11 +36,11 @@ export const ContactSection = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!window.grecaptcha) {
-      alert("reCAPTCHA is not loaded. Please reload the page.");
+    if (!isRecaptchaReady || !window.grecaptcha) {
+      alert("reCAPTCHA is not ready. Please reload the page.");
       return;
     }
 
@@ -63,6 +65,10 @@ export const ContactSection = () => {
     setIsSubmitting(true);
 
     try {
+      const recaptchaToken = await window.grecaptcha.execute(
+        "6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk",
+        { action: "submit" }
+      );
       const response = await fetch("/api/send-email", {
         method: "POST",
         headers: {
