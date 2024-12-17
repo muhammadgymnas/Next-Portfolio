@@ -4,15 +4,21 @@ import { RecaptchaEnterpriseServiceClient } from "@google-cloud/recaptcha-enterp
 import validator from "validator";
 import DOMPurify from "isomorphic-dompurify";
 
-// Google Cloud Project ID
-const PROJECT_ID =
-  process.env.GCP_PROJECT_ID || "jimi-portfolio-r-1734369808876";
-const RECAPTCHA_SITE_KEY =
-  process.env.RECAPTCHA_SITE_KEY || "6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk";
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
+// Ambil variabel lingkungan
+const PROJECT_ID = process.env.GCP_PROJECT_ID || "";
+const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || "";
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || "";
+const EMAIL_USER = process.env.EMAIL_USER || "";
+const EMAIL_PASS = process.env.EMAIL_PASS || "";
 
-// Initialize Google reCAPTCHA Enterprise Client
+// Validasi bahwa semua variabel lingkungan sudah terisi
+if (!PROJECT_ID || !RECAPTCHA_SITE_KEY || !EMAIL_USER || !EMAIL_PASS) {
+  throw new Error(
+    "Missing required environment variables. Please check your .env.local file."
+  );
+}
+
+// Inisialisasi klien Google reCAPTCHA Enterprise
 const recaptchaClient = new RecaptchaEnterpriseServiceClient();
 
 // Handler API untuk pengiriman email
@@ -20,6 +26,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Batasi hanya metode POST
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -36,6 +43,12 @@ export default async function handler(
 
   if (!validator.isEmail(email)) {
     return res.status(400).json({ error: "Invalid email format." });
+  }
+
+  if (name.length < 2 || name.length > 50) {
+    return res.status(400).json({
+      error: "Name must be between 2 and 50 characters.",
+    });
   }
 
   if (message.length < 10 || message.length > 1000) {
@@ -82,10 +95,8 @@ export default async function handler(
 
     const score = riskAnalysis?.score ?? 0;
 
-    if (score >= 0.5) {
-      console.log("reCAPTCHA risk score:", score);
-    } else {
-      console.error("reCAPTCHA risk score is too low.");
+    if (score < 0.5) {
+      console.error("reCAPTCHA risk score is too low:", score);
       return res.status(400).json({
         error: "Failed reCAPTCHA verification. Please try again.",
       });
@@ -93,7 +104,9 @@ export default async function handler(
 
     // Konfigurasi Nodemailer
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // Gunakan SSL
       auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS,
@@ -101,9 +114,9 @@ export default async function handler(
     });
 
     const mailOptions = {
-      from: EMAIL_USER,
+      from: `"Contact Form" <${EMAIL_USER}>`,
       to: EMAIL_USER,
-      subject: "New Contact Message",
+      subject: `New Message from ${name}`,
       text: `
         You have a new message from:
         Name: ${name}
@@ -118,10 +131,11 @@ export default async function handler(
   } catch (error) {
     console.error(
       "Error during email sending or reCAPTCHA verification:",
-      error
+      error.message
     );
-    return res
-      .status(500)
-      .json({ error: "An error occurred. Please try again." });
+    return res.status(500).json({
+      error:
+        "An error occurred while processing your request. Please try again.",
+    });
   }
 }

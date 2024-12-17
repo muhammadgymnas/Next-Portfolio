@@ -30,7 +30,7 @@ export const ContactSection = () => {
     const existingScript = document.querySelector(
       'script[src="https://www.google.com/recaptcha/api.js?render=explicit"]'
     );
-    if (!existingScript) {
+    if (!document.querySelector(`script[src="${script.src}"]`)) {
       document.body.appendChild(script);
     }
   }, []);
@@ -71,11 +71,7 @@ export const ContactSection = () => {
     setIsSubmitting(true);
 
     try {
-      const recaptchaToken = await window.grecaptcha.execute(
-        "6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk",
-        { action: "submit" }
-      );
-      const response = await fetch("/api/send-email", {
+      const response = await fetch("/api/verify-recaptcha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +104,7 @@ export const ContactSection = () => {
 
   const closeWithAnimation = () => {
     setIsModalVisible(false);
-    setTimeout(() => setIsModalOpen(false), 300); // Waktu sesuai animasi
+    setTimeout(() => setIsModalOpen(false), 300);
   };
 
   return (
