@@ -12,6 +12,7 @@
     "static": "next build && next export && touch ./out/.nojekyll && echo 'https://muhammadgymnas.github.io/Next-Portfolio' > ./out/CNAME"
   },
   "dependencies": {
+    "@google-cloud/recaptcha-enterprise": "^5.13.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "framer-motion": "^11.14.4",

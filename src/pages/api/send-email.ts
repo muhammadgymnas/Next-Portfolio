@@ -1,8 +1,19 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
-import axios from "axios";
+import { RecaptchaEnterpriseServiceClient } from "@google-cloud/recaptcha-enterprise";
 import validator from "validator";
 import DOMPurify from "isomorphic-dompurify";
+
+// Google Cloud Project ID
+const PROJECT_ID =
+  process.env.GCP_PROJECT_ID || "jimi-portfolio-r-1734369808876";
+const RECAPTCHA_SITE_KEY =
+  process.env.RECAPTCHA_SITE_KEY || "6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk";
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+
+// Initialize Google reCAPTCHA Enterprise Client
+const recaptchaClient = new RecaptchaEnterpriseServiceClient();
 
 // Handler API untuk pengiriman email
 export default async function handler(
@@ -15,11 +26,6 @@ export default async function handler(
   }
 
   const { name, email, message, recaptchaToken } = req.body;
-
-  // Menggunakan test secret key untuk reCAPTCHA
-  const RECAPTCHA_SECRET_KEY =
-    process.env.RECAPTCHA_SECRET_KEY ||
-    "6Lefhp0qAAAAAKWwv7NG_t0SmvsAQt3pDfVf7rEP";
 
   // Validasi input
   if (!name || !email || !message || !recaptchaToken) {
@@ -41,68 +47,81 @@ export default async function handler(
   const sanitizedMessage = DOMPurify.sanitize(message);
 
   try {
-    // Verifikasi reCAPTCHA
-    const recaptchaResponse = await axios.post(
-      "https://www.google.com/recaptcha/api/siteverify",
-      null,
-      {
-        params: {
-          secret: RECAPTCHA_SECRET_KEY,
-          response: recaptchaToken,
+    // Verifikasi reCAPTCHA menggunakan Google reCAPTCHA Enterprise
+    const projectPath = recaptchaClient.projectPath(PROJECT_ID);
+
+    const [response] = await recaptchaClient.createAssessment({
+      parent: projectPath,
+      assessment: {
+        event: {
+          token: recaptchaToken,
+          siteKey: RECAPTCHA_SITE_KEY,
         },
-      }
-    );
+      },
+    });
 
-    const { success, score, action } = recaptchaResponse.data;
+    const { tokenProperties, riskAnalysis } = response;
 
-    if (!success || score < 0.5 || action !== "submit") {
+    // Validasi token reCAPTCHA
+    if (!tokenProperties?.valid) {
+      console.error(
+        `Invalid reCAPTCHA token: ${tokenProperties?.invalidReason}`
+      );
       return res.status(400).json({
-        error: "reCAPTCHA verification failed. Please try again.",
+        error: "Invalid reCAPTCHA token. Please try again.",
       });
     }
 
-    console.log("reCAPTCHA Score:", score, "Action:", action);
-
-    if (!success) {
+    // Validasi aksi dan risiko
+    if (tokenProperties.action !== "submit") {
+      console.error("Unexpected reCAPTCHA action:", tokenProperties.action);
       return res.status(400).json({
-        error: "reCAPTCHA verification failed. Please try again.",
+        error: "Unexpected reCAPTCHA action. Please try again.",
+      });
+    }
+
+    const score = riskAnalysis?.score ?? 0;
+
+    if (score >= 0.5) {
+      console.log("reCAPTCHA risk score:", score);
+    } else {
+      console.error("reCAPTCHA risk score is too low.");
+      return res.status(400).json({
+        error: "Failed reCAPTCHA verification. Please try again.",
       });
     }
 
     // Konfigurasi Nodemailer
-    try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
-        subject: "New Contact Message",
-        text: `
-          You have a new message from:
-          Name: ${name}
-          Email: ${email}
-          Message: ${sanitizedMessage}
-        `,
-      };
-
-      await transporter.sendMail(mailOptions);
-      return res.status(200).json({ message: "Email sent successfully!" });
-    } catch (emailError) {
-      console.error("Email send failed:", emailError);
-      return res
-        .status(500)
-        .json({ error: "Failed to send email. Please try again later." });
-    }
-  } catch (recaptchaError) {
-    console.error("reCAPTCHA verification failed:", recaptchaError);
-    return res.status(400).json({
-      error: "reCAPTCHA verification failed. Please try again.",
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
+      },
     });
+
+    const mailOptions = {
+      from: EMAIL_USER,
+      to: EMAIL_USER,
+      subject: "New Contact Message",
+      text: `
+        You have a new message from:
+        Name: ${name}
+        Email: ${email}
+        Message: ${sanitizedMessage}
+      `,
+    };
+
+    // Kirim email
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error(
+      "Error during email sending or reCAPTCHA verification:",
+      error
+    );
+    return res
+      .status(500)
+      .json({ error: "An error occurred. Please try again." });
   }
 }
