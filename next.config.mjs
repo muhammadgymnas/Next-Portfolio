@@ -1,5 +1,3 @@
-/** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === "production";
 const nextConfig = {
   reactStrictMode: true,
   images: {
@@ -7,7 +5,7 @@ const nextConfig = {
   },
   assetPrefix: isProd ? "/Next-Portfolio" : "",
   basePath: isProd ? "/Next-Portfolio" : "",
-  // Hapus bagian output: "export" untuk memungkinkan penggunaan API routes
+  output: "export", // Pastikan ini ditambahkan
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.(".svg")
