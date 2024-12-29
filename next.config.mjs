@@ -8,7 +8,6 @@ const nextConfig = {
   },
   assetPrefix: isProd ? "/Next-Portfolio" : "",
   basePath: isProd ? "/Next-Portfolio" : "",
-  output: "export", // Pastikan ini ditambahkan
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.(".svg")
