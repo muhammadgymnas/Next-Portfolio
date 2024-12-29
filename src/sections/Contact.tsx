@@ -1,18 +1,16 @@
-"use client";
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import emailjs from "emailjs-com"; // Import EmailJS SDK
+import Image from "next/image";
 
 export const ContactSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(
     null
   );
+  const [isGifLoaded, setIsGifLoaded] = useState(false); // Track if GIF is loaded
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -38,13 +36,6 @@ export const ContactSection = () => {
     }
   }, []);
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -63,21 +54,23 @@ export const ContactSection = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          recaptchaToken,
-        }),
-      });
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      formData.append("recaptcha_token", recaptchaToken);
 
-      if (response.ok) {
-        alert("Message sent successfully!");
-        setFormData({ name: "", email: "", message: "" });
-        closeWithAnimation();
+      const response = await emailjs.sendForm(
+        "service_3194rai", // Your EmailJS service ID
+        "template_wzsis7r", // Your EmailJS template ID
+        form, // Pass the form reference directly
+        "DoqkJg1KTAH4cx1EE" // Your EmailJS user ID
+      );
+
+      if (response.status === 200) {
+        form.reset();
+        setIsModalOpen(false); // Close the first modal
+        setIsModalVisible(false);
+        setIsSuccessModalVisible(true); // Show success modal
+        setTimeout(() => setIsSuccessModalVisible(false), 3000); // Auto-hide after 3 seconds
       } else {
         alert("Failed to send message. Please try again.");
       }
@@ -86,7 +79,7 @@ export const ContactSection = () => {
       alert("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
-      window.grecaptcha.reset(recaptchaWidgetId); // Reset the widget for reuse
+      window.grecaptcha.reset(recaptchaWidgetId);
     }
   };
 
@@ -94,26 +87,34 @@ export const ContactSection = () => {
     setIsModalOpen(true);
     setTimeout(() => {
       setIsModalVisible(true);
-
       if (window.grecaptcha) {
         const widgetId = window.grecaptcha.render("recaptcha-container", {
           sitekey: "6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk",
         });
         setRecaptchaWidgetId(widgetId);
       }
-    }, 100); // Ensure modal is fully rendered before rendering reCAPTCHA
+    }, 100);
   };
 
   const closeWithAnimation = () => {
     setIsModalVisible(false);
     setTimeout(() => setIsModalOpen(false), 300);
-    setRecaptchaWidgetId(null); // Reset the widget ID when modal is closed
+    setRecaptchaWidgetId(null);
   };
+
+  // Timer to switch from GIF to static PNG after a short delay (e.g., 2 seconds)
+  useEffect(() => {
+    if (isSuccessModalVisible) {
+      setTimeout(() => {
+        setIsGifLoaded(true); // Change to static PNG after 2 seconds
+      }, 1400); // Adjust time as needed
+    }
+  }, [isSuccessModalVisible]);
 
   return (
     <div id="contact" className="bg-cyan-400 text-center py-20 mt-32">
       <p className="text-sm md:text-2xl font-bold text-white mb-10 md:mb-20">
-        If You have any Query or Project ideas feel free to
+        If you have any query or project ideas, feel free to
       </p>
       <button onClick={openWithAnimation} className="contact-button">
         Contact me
@@ -143,8 +144,6 @@ export const ContactSection = () => {
                   type="text"
                   id="name"
                   name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
                   placeholder="Enter your name.."
                   className="w-full border border-gray-300 rounded px-3 py-2 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
@@ -161,8 +160,6 @@ export const ContactSection = () => {
                   type="email"
                   id="email"
                   name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
                   placeholder="Enter your email address.."
                   className="w-full border border-gray-300 rounded px-3 py-2 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
@@ -178,8 +175,6 @@ export const ContactSection = () => {
                 <textarea
                   id="message"
                   name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
                   placeholder="Write your message here.."
                   className="w-full border border-gray-300 rounded px-3 py-2 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={4}
@@ -190,7 +185,7 @@ export const ContactSection = () => {
                 id="recaptcha-container"
                 className="mb-4 flex justify-center items-center"
               ></div>
-              <div className="flex justify-end gap-4">
+              <div className="flex justify-center gap-4">
                 <button
                   type="button"
                   onClick={closeWithAnimation}
@@ -235,6 +230,34 @@ export const ContactSection = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isSuccessModalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-1000">
+          <div className="bg-white p-6 rounded-md shadow-md text-center transform transition-transform duration-1000 scale-100">
+            {!isGifLoaded ? (
+              <Image
+                src="/images/checkmark.gif"
+                alt="Success"
+                width={64}
+                height={64}
+                className="mx-auto mb-4"
+              />
+            ) : (
+              <Image
+                src="/images/checkmark-static.png" // Replace with a static image URL
+                alt="Success"
+                width={64}
+                height={64}
+                className="mx-auto mb-4"
+              />
+            )}
+            <h3 className="text-lg font-bold mb-2 text-cyan-600">Success!</h3>
+            <p className="text-gray-700">
+              Your email has been sent successfully.
+            </p>
           </div>
         </div>
       )}

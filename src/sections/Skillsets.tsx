@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import CppIcon from "../assets/icons/cpp.svg";
 import GolangIcon from "../assets/icons/golang.svg";
 import CsharpIcon from "../assets/icons/csharp.svg";
@@ -101,29 +102,109 @@ const skills = [
 ];
 
 export const SkillsetsSection = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      {
+        threshold: 0.3, // Trigger when 50% of the section is in view
+      }
+    );
+
+    const section = document.getElementById("skillsets");
+    if (section) {
+      observer.observe(section);
+    }
+
+    return () => {
+      if (section) {
+        observer.unobserve(section);
+      }
+    };
+  }, []);
+
   return (
     <section id="skillsets" className="relative py-12 overflow-hidden">
       <div className="absolute inset-0 w-[96%] max-w-7xl min-h-3 mx-auto bg-blue-900 top-20 rounded-lg shadow-xl -z-10"></div>
       <div className="container mx-auto px-6 relative z-10">
-        <h2 className="text-3xl font-bold text-white mb-8 -mt-4 text-center animate-fade-in-up">
+        <motion.h2
+          className="text-3xl font-bold text-white mb-8 -mt-4 text-center"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{
+            opacity: isVisible ? 1 : 0,
+            y: isVisible ? 0 : 50,
+          }}
+          transition={{
+            duration: 0.6,
+            type: "spring",
+            stiffness: 100,
+            damping: 20,
+          }}
+        >
           My Skillsets
-        </h2>
+        </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {skills.map((skillCategory, index) => (
-            <div key={skillCategory.category}>
-              <h3
-                className="text-xl font-semibold mb-4 text-gray-100 animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.2}s` }}
+            <motion.div
+              key={skillCategory.category}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{
+                opacity: isVisible ? 1 : 0,
+                scale: isVisible ? 1 : 0.8,
+              }}
+              transition={{
+                duration: 1,
+                delay: 0.3 * index,
+                type: "spring",
+                stiffness: 150,
+                damping: 20,
+              }}
+            >
+              <motion.h3
+                className="text-xl font-semibold mb-4 text-gray-100"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{
+                  opacity: isVisible ? 1 : 0,
+                  x: isVisible ? 0 : -30,
+                }}
+                transition={{
+                  duration: 0.6,
+                  delay: 0.5 * index,
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 20,
+                }}
               >
                 {skillCategory.category}
-              </h3>
+              </motion.h3>
               <div className="h-1 bg-gradient-to-r from-fuchsia-300 to-blue-400 mb-6 rounded"></div>
               <div className="flex flex-wrap gap-4">
                 {skillCategory.items.map((skill, idx) => (
-                  <div
+                  <motion.div
                     key={skill.name}
-                    className="flex flex-col items-center group hover:scale-110 transition-transform ease-in-out duration-300 animate-fade-in"
-                    style={{ animationDelay: `${(index + idx) * 0.1}s` }}
+                    className="flex flex-col items-center group hover:scale-110 transition-transform ease-in-out duration-300"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{
+                      opacity: isVisible ? 1 : 0,
+                      y: isVisible ? 0 : 30,
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      delay: (index + idx) * 0.1,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 20,
+                    }}
+                    whileHover={{
+                      scale: 1.1,
+                      rotate: 10,
+                      transition: { type: "spring", stiffness: 300 },
+                    }}
                   >
                     <div className="w-16 h-16 filter grayscale group-hover:filter-none transition duration-300">
                       {skill.icon}
@@ -131,10 +212,10 @@ export const SkillsetsSection = () => {
                     <p className="mt-2 text-white text-sm font-medium group-hover:text-gray-100">
                       {skill.name}
                     </p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
