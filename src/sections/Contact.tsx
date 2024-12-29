@@ -186,7 +186,10 @@ export const ContactSection = () => {
                   required
                 ></textarea>
               </div>
-              <div id="recaptcha-container" className="mb-4"></div>
+              <div
+                id="recaptcha-container"
+                className="mb-4 flex justify-center items-center"
+              ></div>
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
@@ -197,7 +200,7 @@ export const ContactSection = () => {
                 </button>
                 <button
                   type="submit"
-                  className={`flex items-center gap-2 bg-cyan-500 text-white py-2 px-4 rounded ${
+                  className={`flex items-center gap-3 bg-cyan-500 text-white py-2 px-4 rounded ${
                     isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                   }`}
                   disabled={isSubmitting}

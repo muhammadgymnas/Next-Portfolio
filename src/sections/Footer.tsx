@@ -79,7 +79,7 @@ export const FooterSection = () => {
         {" "}
         {/* Tambah margin-bottom */}
         Ready to bring your ideas to life? Let’s collaborate and create
-        something amazing together. Contact me today!
+        something amazing together. Contact me now!
       </p>
       {/* Media Sosial */}
       <div className="flex space-x-4 justify-center mb-10">
