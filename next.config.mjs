@@ -7,7 +7,7 @@ const nextConfig = {
   },
   assetPrefix: isProd ? "/Next-Portfolio" : "",
   basePath: isProd ? "/Next-Portfolio" : "",
-  output: "export",
+  // Hapus bagian output: "export" untuk memungkinkan penggunaan API routes
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.(".svg")

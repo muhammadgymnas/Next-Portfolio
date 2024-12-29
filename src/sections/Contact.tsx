@@ -10,27 +10,30 @@ export const ContactSection = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
+  const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
+    script.src = "https://www.google.com/recaptcha/api.js";
     script.async = true;
     script.defer = true;
 
     script.onload = () => {
       console.log("reCAPTCHA script loaded.");
-      setIsRecaptchaReady(true);
     };
 
     script.onerror = () => {
       console.error("Failed to load reCAPTCHA script.");
       alert("Failed to load Google reCAPTCHA.");
     };
-    const existingScript = document.querySelector(
-      'script[src="https://www.google.com/recaptcha/api.js?render=explicit"]'
-    );
-    if (!document.querySelector(`script[src="${script.src}"]`)) {
+
+    if (
+      !document.querySelector(
+        'script[src="https://www.google.com/recaptcha/api.js"]'
+      )
+    ) {
       document.body.appendChild(script);
     }
   }, []);
@@ -42,36 +45,25 @@ export const ContactSection = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!isRecaptchaReady || !window.grecaptcha) {
-      alert("reCAPTCHA is not ready. Please reload the page.");
+    if (recaptchaWidgetId === null) {
+      alert("reCAPTCHA is not initialized. Please try again.");
       return;
     }
 
-    console.log("Running reCAPTCHA...");
-    window.grecaptcha.ready(() => {
-      window.grecaptcha
-        .execute("6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk", {
-          action: "submit",
-        })
-        .then(async (recaptchaToken) => {
-          console.log("reCAPTCHA token received:", recaptchaToken);
-          await sendEmail(recaptchaToken);
-        })
-        .catch((err) => {
-          console.error("reCAPTCHA execution failed:", err);
-          alert("Failed to verify reCAPTCHA. Please try again.");
-        });
-    });
-  };
+    const recaptchaToken = window.grecaptcha.getResponse(recaptchaWidgetId);
 
-  const sendEmail = async (recaptchaToken: string) => {
+    if (!recaptchaToken) {
+      alert("Please complete the reCAPTCHA.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/verify-recaptcha", {
+      const response = await fetch("/api/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,17 +86,28 @@ export const ContactSection = () => {
       alert("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
+      window.grecaptcha.reset(recaptchaWidgetId); // Reset the widget for reuse
     }
   };
 
   const openWithAnimation = () => {
     setIsModalOpen(true);
-    setTimeout(() => setIsModalVisible(true), 10);
+    setTimeout(() => {
+      setIsModalVisible(true);
+
+      if (window.grecaptcha) {
+        const widgetId = window.grecaptcha.render("recaptcha-container", {
+          sitekey: "6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk",
+        });
+        setRecaptchaWidgetId(widgetId);
+      }
+    }, 100); // Ensure modal is fully rendered before rendering reCAPTCHA
   };
 
   const closeWithAnimation = () => {
     setIsModalVisible(false);
     setTimeout(() => setIsModalOpen(false), 300);
+    setRecaptchaWidgetId(null); // Reset the widget ID when modal is closed
   };
 
   return (
@@ -183,6 +186,7 @@ export const ContactSection = () => {
                   required
                 ></textarea>
               </div>
+              <div id="recaptcha-container" className="mb-4"></div>
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
@@ -191,10 +195,6 @@ export const ContactSection = () => {
                 >
                   Close
                 </button>
-                <div
-                  className="g-recaptcha"
-                  data-sitekey="6Lefhp0qAAAAADnNXz49RTK1tO2ubsaUz-t5clyk"
-                ></div>
                 <button
                   type="submit"
                   className={`flex items-center gap-2 bg-cyan-500 text-white py-2 px-4 rounded ${
