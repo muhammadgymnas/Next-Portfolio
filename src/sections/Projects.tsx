@@ -16,20 +16,6 @@ const projects = [
   },
   {
     id: 2,
-    title: "C++ Secure File Storage System",
-    description:
-      "This project aims to develop a secure file storage application that features encryption and decryption to protect sensitive data. The application will allow users to safely store files, encrypt files upon storage, and decrypt files when accessed. This way, user data will be protected from unauthorized access.",
-    link: "/projects/cpp-secure-storage",
-  },
-  {
-    id: 3,
-    title: "Golang Task Tracker API",
-    description:
-      "The Task Tracker API is a RESTful application that allows users to manage and track their tasks. Users can create, read, update, and delete tasks, as well as mark tasks as complete. The application will provide authentication using JSON Web Tokens (JWT) to ensure that each user has a personalized and secure experience. Data will be stored in a NoSQL database, and the application will use the Gin framework to build the API.",
-    link: "/projects/golang-task-tracker",
-  },
-  {
-    id: 4,
     title:
       "Peak Traffic Patterns: Analyzing Hourly Traffic Flow Data Across Great Britain",
     description:
@@ -37,18 +23,11 @@ const projects = [
     link: "/projects/traffic-pattern-analysis",
   },
   {
-    id: 5,
-    title: "C++ Inventory Management System",
+    id: 3,
+    title: "Proofix.ai",
     description:
-      "This project develops a desktop or web-based inventory management system with Linked List-based CRUD, stock alerts, automated reporting, and role-based security. It enables users to manage products, record transactions, search items, receive stock notifications, and generate analytical reports, optimizing inventory control for businesses. The system is offline and not designed for real-time use.",
-    link: "/projects/cpp-inventory-system",
-  },
-  {
-    id: 6,
-    title: "C++ 41 Card Games",
-    description:
-      "This program simulates the 41 card game with shuffled decks, turn-based play (circular queue), and real-time terminal display of cards. Players draw, discard, and score based on matching symbols. The game ends when a player scores 41 or the deck is empty, with scores ranked and the winner announced. Key features include stack-based card handling and efficient card translation.",
-    link: "/projects/cpp-card-games",
+      "Proofix.ai is a cutting-edge generative AI platform designed to tackle advanced mathematics problems with precision and ease. Empowering students, educators, and professionals, it transforms complex equations into elegant solutions in seconds, unlocking new possibilities in learning and problem-solving.",
+    link: "/projects/proofix-ai",
   },
 ];
 
