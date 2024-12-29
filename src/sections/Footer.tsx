@@ -101,7 +101,7 @@ export const FooterSection = () => {
       {/* Copywriting */}
       <p className="text-md md:text-lg text-gray-800 max-w-md mx-auto mb-8">
         Ready to bring your ideas to life? Let’s collaborate and create
-        something amazing together. Contact me now!
+        something amazing together. Contact me today!
       </p>
 
       {/* Social Media Icons */}
