@@ -239,7 +239,7 @@ export const ContactSection = () => {
           <div className="bg-white p-6 rounded-md shadow-md text-center transform transition-transform duration-1000 scale-100">
             {!isGifLoaded ? (
               <Image
-                src="/images/checkmark.gif"
+                src="./images/checkmark.gif"
                 alt="Success"
                 width={64}
                 height={64}
@@ -247,7 +247,7 @@ export const ContactSection = () => {
               />
             ) : (
               <Image
-                src="/images/checkmark-static.png" // Replace with a static image URL
+                src="./images/checkmark-static.png"
                 alt="Success"
                 width={64}
                 height={64}
